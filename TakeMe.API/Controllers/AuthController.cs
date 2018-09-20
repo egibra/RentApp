@@ -73,7 +73,6 @@ namespace TakeMe.API.Controllers
                 token = tokenHandler.WriteToken(token)
             });
         }
-
-
+               
     }
 }
