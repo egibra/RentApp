@@ -11,5 +11,6 @@ namespace TakeMe.API.Data
         }
         public DbSet<Item> Items { get; set;}
         public DbSet<User> Users { get; set; }
+        public DbSet<Photo> Photos { get; set; }
     }
 }
