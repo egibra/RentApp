@@ -22,7 +22,7 @@ namespace TakeMe.API.Controllers
         private readonly IDatingRepository _repo;
         private readonly IMapper _mapper; 
         private readonly IOptions<CloudinarySettings> _cloudinaryConfig;
-        private Cloudinary _claudinary;
+        private Cloudinary _cloudinary;
 
         public PhotosController(IDatingRepository repo, 
         IMapper mapper, IOptions<CloudinarySettings> cloudinaryConfig)
@@ -37,7 +37,7 @@ namespace TakeMe.API.Controllers
                 _cloudinaryConfig.Value.ApiSecret
             );
 
-            _claudinary = new Cloudinary(acc);
+            _cloudinary = new Cloudinary(acc);
         }
         [HttpGet("{id}", Name="GetPhoto")]
         public async Task<IActionResult> GetPhoto(int id)
@@ -67,7 +67,7 @@ namespace TakeMe.API.Controllers
                         File = new FileDescription(file.Name,stream),
                         Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
                     };
-                    uploadResult = _claudinary.Upload(uploadParams);
+                    uploadResult = _cloudinary.Upload(uploadParams);
                 }
             }
             photoForCreationDto.Url = uploadResult.Uri.ToString();
@@ -115,6 +115,45 @@ namespace TakeMe.API.Controllers
                 return NoContent();
 
             return  BadRequest("Cound not set photo to main");
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePhoto(int userId, int id)
+        {
+            if(userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var user = await _repo.GetUser(userId);
+            
+            if(!user.Photos.Any(x => x.Id == id))
+            {
+                return Unauthorized();
+            }
+
+            var photoFromRepo = await _repo.GetPhoto(id);
+
+            if (photoFromRepo.IsMain)
+            {
+                return BadRequest("You cannot delete your main photo");
+            }
+
+            if(photoFromRepo.PublicId != null)
+            {
+                var deleteParams = new DeletionParams(photoFromRepo.PublicId);
+                var result = _cloudinary.Destroy(deleteParams);
+
+                if (result.Result =="ok") {
+                    _repo.Delete(photoFromRepo);
+                }
+            }
+            
+            if(photoFromRepo.PublicId == null)
+            {
+               _repo.Delete(photoFromRepo);
+            }
+            if (await _repo.SaveAll())
+                return Ok();
+
+            return BadRequest("Failed to delete the photo");
         }
     }
 }

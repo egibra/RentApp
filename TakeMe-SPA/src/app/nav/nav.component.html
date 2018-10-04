@@ -3,17 +3,20 @@
       <a class="navbar-brand" [routerLink]="['/home']" >Take Me App</a>
 
       <ul *ngIf="loggedIn()" class="navbar-nav mr-auto">
-        <li class="nav-item" routerLinkActive="router-link-active" >
+        <li class="nav-item mr-3" routerLinkActive="router-link-active" >
           <a class="nav-link" [routerLink]="['/members']" >Matches</a>
         </li>
-        <li class="nav-item" routerLinkActive="router-link-active">
+        <li class="nav-item mr-3" routerLinkActive="router-link-active">
           <a class="nav-link" [routerLink]="['/lists']" >Lists</a>
         </li>
-        <li class="nav-item" routerLinkActive="router-link-active">
+        <li class="nav-item mr-3" routerLinkActive="router-link-active">
           <a class="nav-link" [routerLink]="['/messages']">Messages</a>
         </li>
       </ul>
       <div *ngIf="loggedIn()" class="dropdown" dropdown>
+        <span class="mr-1">
+          <img src="{{photoUrl}}" alt="">
+        </span>
         <a class="dropdown-toggle text-dark" dropdownToggle>
           Welcome {{authService.decodedToken?.unique_name | titlecase}}
         </a>
